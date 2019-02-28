@@ -7,38 +7,30 @@ import { Code as CodeLoader } from 'react-content-loader'
 import {
     Layout, Menu, Icon,
 } from 'antd';
+import { stat } from 'fs';
 
 const { Content, Sider } = Layout;
 const url = 'http://localhost:8000/graphql'
 
 function NotePage() {
     const context = useContext(AuthContext)
-    const [state, setState] = useState({
-        currentNote: null,
-        notes: [],
-        editorLoading: true,
-        listLoading: true
-    })
-
+    const [notes, setNotes] = useState({})
+    const [currentNote, setCurrentNote] = useState({})
+    const [notesLoading, setNotesLoading] = useState(true)
+    const [editorLoading, setEditorLoading] = useState(true)
+    
     const changeTitle = e => {
         const title = e.target.value
-        debugger
-        const { currentNote } = state
-        setState({
-            currentNote: {
-                ...currentNote,
-                title
-            }
+        setCurrentNote({
+            ...currentNote,
+            title
         })
     }
 
     const changeText = (text) => {
-        const { currentNote } = state
-        setState({
-            currentNote: {
-                ...currentNote,
-                text
-            }
+        setCurrentNote({
+            ...currentNote,
+            text
         })
     }
 
@@ -67,17 +59,14 @@ function NotePage() {
         const notesObj = {}
         notes.forEach(e => {
             notesObj[e._id] = e
-        });
-        setState({
-            notes: notesObj,
-            currentNote: notes[0],
-            listLoading: false,
-            editorLoading: false
         })
+
+        setCurrentNote(notes[0])
+        setNotes(notesObj)
+        setEditorLoading(false)
     }
 
-    const deleteNote = () => {
-        const { currentNote } = state
+    const deleteNote = async () => {
         const requestBody = {
             query: `mutation
                 {
@@ -85,41 +74,30 @@ function NotePage() {
                 }
             `
         }
-        setState({
-            editorLoading: true
-        })
-        fetch(url, {
+
+        setNotesLoading(true)
+        setEditorLoading(true)
+
+        const response = await fetch(url, {
             method: 'POST',
             body: JSON.stringify(requestBody),
             headers: {
                 'Content-type': 'application/json'
             }
         })
-            .then(res => {
-                if (res.status !== 200 && res.status !== 201) {
-                    throw new Error('Failed')
-                }
-                return res.json();
-            })
-            .then(resJson => {
-                const { data: { deleteNote } } = resJson
-                const { notes } = state
-                const { [deleteNote]: deleted, ...rest } = notes
-                const first = Object.keys(rest)[0] || null
-                const newCurrentNote = rest[first]
-                setState({
-                    notes: rest,
-                    currentNote: newCurrentNote,
-                    editorLoading: false
-                })
-            })
-            .catch(err => {
-                console.error(err)
-            })
+        const resJson = await response.json()
+        const { data: { deleteNote } } = resJson
+        const { [deleteNote]: deleted, ...rest } = notes
+        const first = Object.keys(rest)[0] || null
+        const newCurrentNote = rest[first]
+        
+        setCurrentNote(newCurrentNote)
+        setNotes(rest)
+        setNotesLoading(false)
+        setEditorLoading(false)
     }
 
-    const updateNote = () => {
-        const { currentNote } = state
+    const updateNote = async () => {
         const requestBody = {
             query: `mutation
                 {
@@ -131,39 +109,29 @@ function NotePage() {
                 }
             `
         }
-        setState({
-            editorLoading: true
-        })
-        fetch(url, {
+
+        setEditorLoading(true)
+        
+        const response = await fetch(url, {
             method: 'POST',
             body: JSON.stringify(requestBody),
             headers: {
                 'Content-type': 'application/json'
             }
         })
-            .then(res => {
-                if (res.status !== 200 && res.status !== 201) {
-                    throw new Error('Failed')
-                }
-                return res.json();
-            })
-            .then(resJson => {
-                const { data: { updateNote } } = resJson;
-                setState({
-                    currentNote: updateNote,
-                    notes: {
-                        ...state.notes,
-                        [updateNote._id]: updateNote
-                    },
-                    editorLoading: false
-                })
-            })
-            .catch(err => {
-                console.error(err)
-            })
+
+        const resJson = await response.json()
+        const { data: { updateNote } } = resJson;
+        
+        setCurrentNote(updateNote)
+        setNotes({
+            ...notes,
+            [updateNote._id]: updateNote
+        })
+        setEditorLoading(false)
     }
 
-    const addNote = () => {
+    const addNote = async () => {
         const requestBody = {
             query: `mutation
                 {
@@ -175,52 +143,40 @@ function NotePage() {
                 }
             `
         }
-        fetch(url, {
+        const response = await fetch(url, {
             method: 'POST',
             body: JSON.stringify(requestBody),
             headers: {
                 'Content-type': 'application/json'
             }
         })
-            .then(res => {
-                if (res.status !== 200 && res.status !== 201) {
-                    throw new Error('Failed')
-                }
-                return res.json();
-            })
-            .then(resJson => {
-                const { data: { createNote } } = resJson
-                const { notes } = state
-                notes[createNote._id] = createNote
-                setState({
-                    currentNote: createNote,
-                    notes
-                })
-            })
-            .catch(err => {
-                console.error(err)
-            })
-    }
-
-    const selectNote = ({ key }) => {
-        const { notes } = state
-        const currentNote = notes[key]
-        setState({
-            currentNote: currentNote
+        const resJson = await response.json()
+        const { data: { createNote } } = resJson
+        notes[createNote._id] = createNote
+        setCurrentNote(createNote)
+        setNotes({
+            ...notes,
+            [createNote._id]: createNote
         })
     }
 
-    const { notes, currentNote, editorLoading } = state
+    const selectNote = ({ key }) => {
+        console.log(currentNote)
+        setCurrentNote(notes[key])
+        console.log(currentNote)
+    }
+
     const currentId = currentNote ? currentNote._id : null
 
-    useEffect(()=>{getNotes()}, [])
+    useEffect(()=>{getNotes()}, [currentNote])
     return (
         <>
             <Layout style={{ minHeight: '100vh' }}>
                 <Sider width={200} style={{ background: '#fff' }}>
                     <Menu
+                        theme="dark"
                         mode="inline"
-                        selectedKeys={[currentId]}
+                        selectedKeys={[currentNote._id]}
                         style={{ height: '100%', borderRight: 0 }}
                     >
                         <Menu.Item style={{ color: 'red' }} onClick={context.logout}>

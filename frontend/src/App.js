@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 
 import AuthPage from './components/Auth';
 import RegisterPage from './components/Register';
-import NotePage from './components/Notes-hook';
+import NotePage from './components/Notes-class';
 import AuthContext from './contexts/auth-context';
 
 import 'antd/dist/antd.css';

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import {
-    message, Form, Input, Icon, Select, Checkbox, Button, AutoComplete,
+    message, Form, Input, Icon, Button,
   } from 'antd';
 import './Register.css'
 import AuthContext from '../contexts/auth-context'

@@ -195,8 +195,9 @@ class NotePage extends Component {
         return (
             <>
                 <Layout style={{minHeight: '100vh'}}>
-                    <Sider width={200} style={{ background: '#fff' }}>
+                    <Sider  width={200} style={{ background: '#fff' }}>
                         <Menu
+                            theme="dark"
                             mode="inline"
                             selectedKeys={[currentId]}
                             style={{ height: '100%', borderRight: 0 }}
