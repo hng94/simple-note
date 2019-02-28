@@ -8,13 +8,13 @@ import AuthContext from './contexts/auth-context';
 
 import 'antd/dist/antd.css';
 import 'react-quill/dist/quill.snow.css';
-import logo from './logo.svg';
+import logo from './note-icon.png';
 import './App.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    const auth = JSON.parse(localStorage.getItem('auth')) || {token: null, userId: null}
+    const auth = JSON.parse(localStorage.getItem('auth')) || { token: null, userId: null }
     this.state = {
       token: auth.token,
       userId: auth.userId,
@@ -22,7 +22,7 @@ class App extends Component {
   }
 
   login = (token, userId) => {
-    localStorage.setItem('auth', JSON.stringify({token, userId}))
+    localStorage.setItem('auth', JSON.stringify({ token, userId }))
     this.setState({
       token,
       userId
@@ -42,7 +42,7 @@ class App extends Component {
     return (
       <BrowserRouter>
         <>
-          <AuthContext.Provider 
+          <AuthContext.Provider
             value={{
               token: this.state.token,
               userId: this.state.userId,
@@ -50,10 +50,10 @@ class App extends Component {
               logout: this.logout
             }}>
             <Switch>
-              <Redirect from='/' to='/notes' exact/>
-              <Route path="/register" render={props => (this.state.token === null ? <RegisterPage {...props}/> : <Redirect to='/notes'/>)} />
-              <Route path="/auth" render={props => (this.state.token === null ? <AuthPage {...props}/> : <Redirect to='/notes'/>)} />
-              <Route path="/notes" render={(props) => (this.state.token !== null ? <NotePage {...props} token={this.state.token} /> : <Redirect to='/auth'/>)} />
+              <Redirect from='/' to='/notes' exact />
+              <Route path="/register" render={props => (this.state.token === null ? <RegisterPage {...props} /> : <Redirect to='/notes' />)} />
+              <Route path="/auth" render={props => (this.state.token === null ? <AuthPage {...props} /> : <Redirect to='/notes' />)} />
+              <Route path="/notes" render={(props) => (this.state.token !== null ? <NotePage {...props} token={this.state.token} /> : <Redirect to='/auth' />)} />
             </Switch>
           </AuthContext.Provider>
         </>
