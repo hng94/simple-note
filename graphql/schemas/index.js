@@ -16,10 +16,19 @@ type User {
   password: String
 }
 
+type Version {
+  _id: ID!
+  title: String!
+  text: String!
+  created: String!
+  noteId: String!
+}
+
 type AuthData {
   userId: ID!
   token: String!
   tokenExpiration: Int!
+  email: String!
 }
 
 input NoteInput {
@@ -27,6 +36,7 @@ input NoteInput {
   title: String
   text: String
   createdBy: String!
+  tags: [String]
 }
 
 input UserInput {
@@ -35,6 +45,7 @@ input UserInput {
 }
 
 type RootQuery {
+    versions(noteId: String!): [Version!]!
     notes(userId: String!): [Note!]!
     login(email: String!, password: String!): AuthData!
 }

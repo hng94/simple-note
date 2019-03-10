@@ -22,6 +22,7 @@ class NormalLoginForm extends Component {
                             login(email: "${values.email}", password: "${values.password}") {
                                 userId
                                 token
+                                email
                             }
                         }
                     `
@@ -41,9 +42,8 @@ class NormalLoginForm extends Component {
                         return res.json();
                     })
                     .then(resJson => {
-                        const { data: { login: { token, userId } } } = resJson
-                        console.log(token, userId)
-                        this.context.login(token, userId)
+                        const { data: { login } } = resJson
+                        this.context.login(login)
                     })
                     .catch(err => {
                         console.error(err)

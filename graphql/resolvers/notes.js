@@ -1,5 +1,5 @@
 const Note = require('../../models/note')
-const User = require('../../models/user')
+const Version = require('../../models/version')
 const mongoose = require('mongoose')
 
 const mapToDTO = note => {
@@ -12,12 +12,22 @@ const mapToDTO = note => {
 const noteResolver = {
     notes: async (args, req) => {
         try {
-            const userId = args.userId
+            const {userId} = args
             const notes = await Note.find({
-                'createdBy': userId
+                createdBy: userId
             })
-            console.log(notes)
             return notes
+        } catch (error) {
+            throw error
+        }
+    },
+    versions: async (args, req) => {
+        try {
+            const {noteId} = args
+            const versions = await Version.find({
+                noteId
+            })
+            return versions
         } catch (error) {
             throw error
         }
@@ -32,10 +42,16 @@ const noteResolver = {
             modified: new Date()
         })
 
-        let createdNote;
+        const firstVersion = new Version({
+            title: note.title,
+            text: note.text,
+            created: note.created,
+            noteId: note._id
+        })
+
         try {
-            const result = note.save()
-            console.log(result)
+            const result = await note.save()
+            await firstVersion.save()
             return result
         } catch (error) {
             throw error
@@ -48,8 +64,18 @@ const noteResolver = {
             const note = await Note.findById(noteInput._id)
             note.title = noteInput.title
             note.text = noteInput.text
+            note.tags = noteInput.tags
             note.modified = new Date()
-            note.save()
+            await note.save()
+
+            const newVersion = new Version({
+                title: note.title,
+                text: note.text,
+                created: note.modified,
+                noteId: note._id
+            })
+            await newVersion.save()
+
             return note
         } catch (error) {
             throw error
@@ -65,6 +91,10 @@ const noteResolver = {
             if (!note) {
                 throw new Error("Not found")
             }
+
+            const deleteVersions = await Version.deleteMany({
+                noteId: _id
+            })
             return _id;
         } catch (error) {
             throw error

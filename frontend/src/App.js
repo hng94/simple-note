@@ -14,18 +14,20 @@ import './App.css';
 class App extends Component {
   constructor(props) {
     super(props);
-    const auth = JSON.parse(localStorage.getItem('auth')) || { token: null, userId: null }
+    const auth = JSON.parse(localStorage.getItem('auth')) || { token: null, userId: null, email: null }
     this.state = {
       token: auth.token,
       userId: auth.userId,
+      email: auth.email
     }
   }
 
-  login = (token, userId) => {
-    localStorage.setItem('auth', JSON.stringify({ token, userId }))
+  login = ({token, userId, email}) => {
+    localStorage.setItem('auth', JSON.stringify({ token, userId, email }))
     this.setState({
       token,
-      userId
+      userId,
+      email
     })
   }
 
@@ -33,7 +35,8 @@ class App extends Component {
     localStorage.removeItem('auth')
     this.setState({
       token: null,
-      userId: null
+      userId: null,
+      email: null
     })
   }
 
@@ -46,6 +49,7 @@ class App extends Component {
             value={{
               token: this.state.token,
               userId: this.state.userId,
+              email: this.state.email,
               login: this.login,
               logout: this.logout
             }}>

@@ -58,3 +58,27 @@
   padding-top: 20px;
   text-align: center;
 }
+
+.card-1 {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+
+.card-1:hover {
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+}
+
+.control-group {
+  margin-bottom: 10px;
+}
+
+.control-group button {
+  margin-left: 10px;
+}
+
+.ant-timeline .ant-timeline-item .ant-timeline-item-content:hover {
+  cursor: pointer;
+  color: #1890ff;
+  text-decoration: underline;
+}
