@@ -1,27 +1,29 @@
 const Note = require('../../models/note')
 const Version = require('../../models/version')
-const mongoose = require('mongoose')
-
-const mapToDTO = note => {
-    return {
-        ...note._doc,
-        _id: note.id
-    }
-}
+const User = require('../../models/user')
+const objectID = require('mongodb').ObjectID
 
 const noteResolver = {
-    notes: async (args, req) => {
+    notes: async (args) => {
         try {
             const {userId} = args
             const notes = await Note.find({
                 createdBy: userId
             })
-            return notes
+            const user = await User.findById(userId)
+            const sharedNoteIds = user.sharedNotes.map(e => new objectID(e))
+            const sharedNotes = await Note.find({
+                _id: {
+                    $in: sharedNoteIds
+                }
+            })
+            const result = notes.concat(sharedNotes)
+            return result
         } catch (error) {
             throw error
         }
     },
-    versions: async (args, req) => {
+    versions: async (args) => {
         try {
             const {noteId} = args
             const versions = await Version.find({
@@ -32,7 +34,31 @@ const noteResolver = {
             throw error
         }
     },
-    createNote: async (args, req) => {
+    shareNote : async (args) => {
+        const {noteInput} = args
+        const note = await Note.findById(noteInput._id)
+
+        const userEmailToAdd = noteInput.sharedUsers.filter(i => !note.sharedUsers.includes(i))[0]
+        const userToAdd = await User.findOne({email: userEmailToAdd})
+        if (userToAdd) {
+            if (!userToAdd.sharedNotes.includes(noteInput._id)) {
+                userToAdd.sharedNotes.push(noteInput._id)
+            }
+            await userToAdd.save()
+        }
+
+        const userEmailToRemove = note.sharedUsers.filter(i => !noteInput.sharedUsers.includes(i))[0]
+        const userToRemove = await User.findOne({email: userEmailToRemove})
+        if (userToRemove) {
+            userToRemove.sharedNotes = userToRemove.sharedNotes.filter(n => n !== noteInput._id)
+            await userToRemove.save()
+        }
+
+        note.sharedUsers = noteInput.sharedUsers
+        await note.save()
+        return note
+    },
+    createNote: async (args) => {
         const {noteInput} = args
         const note = new Note({
             title: noteInput.title,
@@ -57,7 +83,7 @@ const noteResolver = {
             throw error
         }
     },
-    updateNote: async(args, req) => {
+    updateNote: async(args) => {
         const {noteInput} = args
 
         try {
@@ -81,7 +107,7 @@ const noteResolver = {
             throw error
         }
     },
-    deleteNote: async (args, req) => {
+    deleteNote: async (args) => {
         const {_id, createdBy} = args
         try {
             const note = await Note.findOneAndRemove({
@@ -92,9 +118,6 @@ const noteResolver = {
                 throw new Error("Not found")
             }
 
-            const deleteVersions = await Version.deleteMany({
-                noteId: _id
-            })
             return _id;
         } catch (error) {
             throw error

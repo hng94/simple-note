@@ -11,6 +11,9 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
+  sharedNotes: {
+    type: [String]
+  }
 });
 
 module.exports = mongoose.model('User', userSchema);

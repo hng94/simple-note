@@ -7,13 +7,16 @@ type Note {
   title: String!
   text: String!
   created: String!
+  createdBy: String!
   modified: String!
+  sharedUsers: [String]
 }
 
 type User {
   _id: ID!
   email: String!
   password: String
+  sharedNotes: [String]
 }
 
 type Version {
@@ -35,8 +38,8 @@ input NoteInput {
   _id: String
   title: String
   text: String
-  createdBy: String!
-  tags: [String]
+  createdBy: String
+  sharedUsers: [String]
 }
 
 input UserInput {
@@ -44,13 +47,16 @@ input UserInput {
   password: String!
 }
 
+
 type RootQuery {
+    fetchUsers(query: String!, userId: String!): [String]
     versions(noteId: String!): [Version!]!
     notes(userId: String!): [Note!]!
     login(email: String!, password: String!): AuthData!
 }
 
 type RootMutation {
+    shareNote(noteInput: NoteInput): Note
     createNote(noteInput: NoteInput): Note
     updateNote(noteInput: NoteInput): Note
     deleteNote(_id: String!, createdBy: String!): String!

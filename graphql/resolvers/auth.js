@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose')
 
 const User = require('../../models/user');
 
@@ -41,5 +42,10 @@ module.exports = {
       }
     );
     return { userId: user.id, token: token, tokenExpiration: 1, email: user.email };
+  },
+  fetchUsers: async ({query, userId}) => {
+    const users = await User.find({_id: {$ne: new mongoose.Types.ObjectId(userId)}})
+    const result = users.filter(u => u.email.toLowerCase().startsWith(query.toLowerCase())).map(u => u.email)
+    return result
   }
 };

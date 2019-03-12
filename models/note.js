@@ -20,6 +20,9 @@ const noteSchema = new Schema({
     createdBy: {
         type: String,
         required: true
+    },
+    sharedUsers: {
+        type: [String]
     }
 })
 
